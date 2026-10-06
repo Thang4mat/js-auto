@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
