@@ -96,7 +96,8 @@
             "data:image/webp;base64,UklGRi4BAABXRUJQVlA4TCIBAAAvEUAHEF9gJAASXkAk2bzgawe4gEneMBTZxv+4uhoFtBVAFsJRG0lqgy+CIaVBuiY1ikWQbVOx0R/sAYD/f0ZW5rOLTjOlNCP63IZc2y6Ao+1/2ub3+ME1W8p+/uVOeACD5MJEkuID2LpAmcl2aMuoW5TpeHXvENH/CQDAbDSGRfqP1HZoI2QQve08hdCsbA2VjbBQ7G3IbaCnNBdvQ9y3hkIV6tlvPw9Lobn0v3477UhybZ+fdSaecyHT+7P691eUGYeoPq/4UXczVOy8K/SVn3NdZrw49cNcsXJbciDn9cQDs4EwryaeMxtAyD6vtgFg1Zx38XfPDPyGUJoVC0BATM6TBRAZJogQEBmzS2QFRCOz0kQjIrJAzUDQYAEIiMgCAA==",
             "https://sunflower-land.com/game-assets/fruit/orange/orange_tree.png",
             "https://sunflower-land.com/game-assets/fruit/bush_shrub.png",
-            "https://sunflower-land.com/game-assets/fruit/dead_tree.webp",]
+            "https://sunflower-land.com/game-assets/fruit/dead_tree.webp",
+            "https://sunflower-land.com/game-assets/fruit/apple/apple_tree.png",]
     },
     {
       key: "TREES",
