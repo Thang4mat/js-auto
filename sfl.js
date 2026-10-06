@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2026-10-03
-// @description  try to take over the world!
+// @version      1.1
+// @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=sunflower-land.com
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/Thang4mat/js-auto/refs/heads/main/sfl.js
+// @downloadURL  https://raw.githubusercontent.com/Thang4mat/js-auto/refs/heads/main/sfl.js
 // ==/UserScript==
 
 (function () {
@@ -19,7 +21,7 @@
     return;
   }
 
-  // ===== Dữ liệu SEEDS: dùng cho nút thủ công "HARVEST" bên dưới, không còn auto-click =====
+  // ===== Dữ liệu =====
   const SEEDS = [
     "https://sunflower-land.com/game-assets/crops/sunflower/plant.png",
     "https://sunflower-land.com/game-assets/crops/potato/plant.png",
@@ -44,6 +46,7 @@
     "https://sunflower-land.com/game-assets/crops/kale/plant.png",
     "https://sunflower-land.com/game-assets/crops/artichoke/plant.png",
     "https://sunflower-land.com/game-assets/crops/barley/plant.png",
+    "https://sunflower-land.com/game-assets/crops/soil2.png",
   ];
     const FERTILIZE = [
     "https://sunflower-land.com/game-assets/crops/sunflower/seedling.png",
@@ -70,26 +73,12 @@
     "https://sunflower-land.com/game-assets/crops/artichoke/seedling.png",
     "https://sunflower-land.com/game-assets/crops/barley/seedling.png",
   ];
-    const FRETILIZED = [
+    const FERTILIZED = [
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAMAAACn6Q83AAAABGdBTUEAALGOfPtRkwAAACFQTFRFAAAAwMvcWmmIGBQl////JlxCY8dNJitEeMVop/+Ukv96pgoFnAAAAAt0Uk5TAP////////////99dn3VAAAAOElEQVQImVXMMQ4AMAgCQBck8f8PLqIdZLoEQoRCxoaZ/Koat8Yjm7URgQZwqFPXvGc9cX2ptZcPwv4Cs0IVRlAAAAAASUVORK5CYII=",
     ];
   // ===== Danh sách chỉ click khi bấm nút thủ công =====
   // Thêm nhóm mới: thêm 1 dòng vào mảng này, mọi logic/nút bên dưới tự chạy theo.
   const MANUAL_GROUPS = [
-    {
-      key: "FERTILIZE",
-      color: "#FFBF00",
-      srcs: FERTILIZE,
-      filter: (img) => isFertilizeEligible(img),
-    },
-    {
-      key: "FRUIT",
-      color: "#ee4b2b",
-      srcs: ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAjCAYAAABsFtHvAAAAAXNSR0IArs4c6QAAA2dJREFUWIWtlkFLG1EQx/8r0aWQQlpIFSFqpHoytPWSFpoUhFbxVHr20K/QS3vxC1gPXj1LPoM0HgImhSQ9BMJ6CElxg7mkXVpDFUpUmh7WeTv79u1uog4Esu/tzO8/82ZeosHHsltrA/5c/PRF83v3phbxgy5kxwEAaSzbG1sYBImQxZIFiXZtZLfWBgTtmedifTWZBQBUUUOreOkJuLixMkitDxBLRoXYKmoAgFbx0leEJgewOjriiT5iySgAO/O8WcRqMou8WQQAWB1dBFvcWBlMpSaEDxcNQKxxHxfcD8yNApB1jQsAwFRqAgAQT/RhdXQsZMdd2ZMf7XMBY6Tc2NcQT/Q9JVc9cygZAQhKVYslo2I9nui7eiPCg1kdiJdkoCpruQJWR4fVsc+4hSrz1kVcbqLsQVmRo9XRBeysfSX27s9FXH4EkY9PblblGNBRbGTTYi1vFgWcg7kAajwCU/X8pmVMBU6tD8Sc582iAMuZqp75e7Fk1DUlVBU6d995VammNWPfWzCetd+4ymPnmXNypszJmQug8nMgz5aPFz/3VvHSJdBzvZJTz3QcedaA3eG2UAfMIfZ3uhccv3jCPZIRytruVHcWqnHjYyZDe+a5c0zJGhNAcCd+17hwNxy/aGQogevTbdSn2+LcSWAay57mIogsngR5up1A/ENBGtuz0J8/BAA03v1xCaiihipqiCWjgQK4ueDy5dI1LsSnsT0LlA30K7+hf3gFAMoKUAL8uZkraPwm7BoXaOYK2pi8yaHNXEFr5gpafboNAA6YRFxXgarTM8+VvwOcQXEBdrc3cwUN19csbbqsbHgjvkihXjnEE2MOgO7pF1uUk5Qc1zVqSiiAe5+Ptb8fMVBl7YXRGeuefdk8DTeK9XcOsVmZxOnBSUbVVLzEKhvqT2H80eOXAHDy/l+Jr/96+hYAsLNbxl7Dyjx4M1Oipg0DA4o/kCoo2WZlEq+fTToL1WPX+6cHJxlgpnTV6+Ps249MSE7+cBk8rNkCnBjWz+9f/d5VnnkQeCk9P5KYoFiezMMyPqoeewQspeeB3XJpr2GFljoQPowdSWcdZn7lv9Wo3dZGggeVddSSA4o5v2mXh5mq7MpL4K4F+I2b7w10VwKC5jzw+rutgCBwKPymIsKgI8GHFTEslOw/cNcyyfgTT8gAAAAASUVORK5CYII=",
-            "https://sunflower-land.com/game-assets/fruit/orange/orange_tree.png",
-            "https://sunflower-land.com/game-assets/fruit/bush_shrub.png",
-            "data:image/webp;base64,UklGRi4BAABXRUJQVlA4TCIBAAAvEUAHEF9gJAASXkAk2bzgawe4gEneMBTZxv+4uhoFtBVAFsJRG0lqgy+CIaVBuiY1ikWQbVOx0R/sAYD/f0ZW5rOLTjOlNCP63IZc2y6Ao+1/2ub3+ME1W8p+/uVOeACD5MJEkuID2LpAmcl2aMuoW5TpeHXvENH/CQDAbDSGRfqP1HZoI2QQve08hdCsbA2VjbBQ7G3IbaCnNBdvQ9y3hkIV6tlvPw9Lobn0v3477UhybZ+fdSaecyHT+7P691eUGYeoPq/4UXczVOy8K/SVn3NdZrw49cNcsXJbciDn9cQDs4EwryaeMxtAyD6vtgFg1Zx38XfPDPyGUJoVC0BATM6TBRAZJogQEBmzS2QFRCOz0kQjIrJAzUDQYAEIiMgCAA=="],
-    },
     {
       key: "GOLD",
       color: "#ffbf00",
@@ -101,20 +90,30 @@
       srcs: ["https://sunflower-land.com/game-assets/resources/iron_small.png"],
     },
     {
+      key: "FRUIT",
+      color: "#ee4b2b",
+      srcs: ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAjCAYAAABsFtHvAAAAAXNSR0IArs4c6QAAA2dJREFUWIWtlkFLG1EQx/8r0aWQQlpIFSFqpHoytPWSFpoUhFbxVHr20K/QS3vxC1gPXj1LPoM0HgImhSQ9BMJ6CElxg7mkXVpDFUpUmh7WeTv79u1uog4Esu/tzO8/82ZeosHHsltrA/5c/PRF83v3phbxgy5kxwEAaSzbG1sYBImQxZIFiXZtZLfWBgTtmedifTWZBQBUUUOreOkJuLixMkitDxBLRoXYKmoAgFbx0leEJgewOjriiT5iySgAO/O8WcRqMou8WQQAWB1dBFvcWBlMpSaEDxcNQKxxHxfcD8yNApB1jQsAwFRqAgAQT/RhdXQsZMdd2ZMf7XMBY6Tc2NcQT/Q9JVc9cygZAQhKVYslo2I9nui7eiPCg1kdiJdkoCpruQJWR4fVsc+4hSrz1kVcbqLsQVmRo9XRBeysfSX27s9FXH4EkY9PblblGNBRbGTTYi1vFgWcg7kAajwCU/X8pmVMBU6tD8Sc582iAMuZqp75e7Fk1DUlVBU6d995VammNWPfWzCetd+4ymPnmXNypszJmQug8nMgz5aPFz/3VvHSJdBzvZJTz3QcedaA3eG2UAfMIfZ3uhccv3jCPZIRytruVHcWqnHjYyZDe+a5c0zJGhNAcCd+17hwNxy/aGQogevTbdSn2+LcSWAay57mIogsngR5up1A/ENBGtuz0J8/BAA03v1xCaiihipqiCWjgQK4ueDy5dI1LsSnsT0LlA30K7+hf3gFAMoKUAL8uZkraPwm7BoXaOYK2pi8yaHNXEFr5gpafboNAA6YRFxXgarTM8+VvwOcQXEBdrc3cwUN19csbbqsbHgjvkihXjnEE2MOgO7pF1uUk5Qc1zVqSiiAe5+Ptb8fMVBl7YXRGeuefdk8DTeK9XcOsVmZxOnBSUbVVLzEKhvqT2H80eOXAHDy/l+Jr/96+hYAsLNbxl7Dyjx4M1Oipg0DA4o/kCoo2WZlEq+fTToL1WPX+6cHJxlgpnTV6+Ps249MSE7+cBk8rNkCnBjWz+9f/d5VnnkQeCk9P5KYoFiezMMyPqoeewQspeeB3XJpr2GFljoQPowdSWcdZn7lv9Wo3dZGggeVddSSA4o5v2mXh5mq7MpL4K4F+I2b7w10VwKC5jzw+rutgCBwKPymIsKgI8GHFTEslOw/cNcyyfgTT8gAAAAASUVORK5CYII=",
+            "data:image/webp;base64,UklGRi4BAABXRUJQVlA4TCIBAAAvEUAHEF9gJAASXkAk2bzgawe4gEneMBTZxv+4uhoFtBVAFsJRG0lqgy+CIaVBuiY1ikWQbVOx0R/sAYD/f0ZW5rOLTjOlNCP63IZc2y6Ao+1/2ub3+ME1W8p+/uVOeACD5MJEkuID2LpAmcl2aMuoW5TpeHXvENH/CQDAbDSGRfqP1HZoI2QQve08hdCsbA2VjbBQ7G3IbaCnNBdvQ9y3hkIV6tlvPw9Lobn0v3477UhybZ+fdSaecyHT+7P691eUGYeoPq/4UXczVOy8K/SVn3NdZrw49cNcsXJbciDn9cQDs4EwryaeMxtAyD6vtgFg1Zx38XfPDPyGUJoVC0BATM6TBRAZJogQEBmzS2QFRCOz0kQjIrJAzUDQYAEIiMgCAA==",
+            "https://sunflower-land.com/game-assets/fruit/orange/orange_tree.png",
+            "https://sunflower-land.com/game-assets/fruit/bush_shrub.png",
+            "https://sunflower-land.com/game-assets/fruit/dead_tree.webp",]
+    },
+    {
       key: "TREES",
       color: "#a52a2a",
       srcs: ["https://sunflower-land.com/game-assets/resources/tree/Desert/summer_desert_tree.webp",
             "https://sunflower-land.com/game-assets/resources/tree/Desert/autumn_desert_tree.webp"],
     },
     {
-      key: "CROPS",
-      color: "#16a34a",
-      srcs: ["https://sunflower-land.com/game-assets/crops/soil2.png"],
+      key: "FERTILIZE",
+      color: "#FFBF00",
+      srcs: FERTILIZE,
+      filter: (img) => isFertilizeEligible(img),
     },
     {
-      key: "HARVEST",
+      key: "CROPS",
       color: "#16a34a",
-      srcs: SEEDS, // dùng chung dữ liệu với SEEDS, không tách riêng để tránh lệch dữ liệu khi sửa 1 trong 2 nơi
+      srcs: SEEDS,
     },
 
     // Thêm nhóm mới tại đây, ví dụ:
@@ -132,7 +131,7 @@
   // (dùng chung vì trùng class thật trên trang), bên trong có thể chứa 1 div
   // chỉ báo trạng thái (ví dụ: đã bón phân) theo FERTILIZE_INDICATOR_SELECTOR.
   const FERTILIZE_INDICATOR_SELECTOR = "div.absolute.z-20.pointer-events-none.flex";
-  const TARGET_FRETILIZED = new Set(FRETILIZED);
+  const TARGET_FERTILIZED = new Set(FERTILIZED);
 
   // Khoảng delay giữa mỗi click. Đã xác nhận thực tế trên trang này: 50-100ms
   // không gây bỏ sót phần tử (nhờ findAllMatches() quét lại toàn bộ DOM mỗi lần,
@@ -161,8 +160,8 @@
   // Điều kiện riêng cho nhóm FERTILIZE: chỉ click ô đất (seedling) khi ô đó
   // CHƯA có chỉ báo "đã bón phân". Tương đương:
   //   - plot không chứa div chỉ báo -> được click
-  //   - plot có chứa div chỉ báo, nhưng div đó không chứa img thuộc FRETILIZED -> được click
-  //   - plot có chứa div chỉ báo VÀ div đó chứa img thuộc FRETILIZED -> bỏ qua (đã bón phân rồi)
+  //   - plot có chứa div chỉ báo, nhưng div đó không chứa img thuộc FERTILIZED -> được click
+  //   - plot có chứa div chỉ báo VÀ div đó chứa img thuộc FERTILIZED -> bỏ qua (đã bón phân rồi)
   function isFertilizeEligible(img) {
     const plot = img.closest(CONTAINER_SELECTOR);
     if (!plot) return true; // không xác định được plot -> không chặn, vẫn cho click
@@ -171,7 +170,7 @@
     if (!indicator) return true; // plot không chứa div chỉ báo -> được click
 
     const alreadyFertilized = [...indicator.querySelectorAll("img")].some((el) =>
-      TARGET_FRETILIZED.has(el.getAttribute("src"))
+      TARGET_FERTILIZED.has(el.getAttribute("src"))
     );
     return !alreadyFertilized;
   }
