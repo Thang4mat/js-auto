@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -92,11 +92,12 @@
     {
       key: "FRUIT",
       color: "#ee4b2b",
-      srcs: ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAjCAYAAABsFtHvAAAAAXNSR0IArs4c6QAAA2dJREFUWIWtlkFLG1EQx/8r0aWQQlpIFSFqpHoytPWSFpoUhFbxVHr20K/QS3vxC1gPXj1LPoM0HgImhSQ9BMJ6CElxg7mkXVpDFUpUmh7WeTv79u1uog4Esu/tzO8/82ZeosHHsltrA/5c/PRF83v3phbxgy5kxwEAaSzbG1sYBImQxZIFiXZtZLfWBgTtmedifTWZBQBUUUOreOkJuLixMkitDxBLRoXYKmoAgFbx0leEJgewOjriiT5iySgAO/O8WcRqMou8WQQAWB1dBFvcWBlMpSaEDxcNQKxxHxfcD8yNApB1jQsAwFRqAgAQT/RhdXQsZMdd2ZMf7XMBY6Tc2NcQT/Q9JVc9cygZAQhKVYslo2I9nui7eiPCg1kdiJdkoCpruQJWR4fVsc+4hSrz1kVcbqLsQVmRo9XRBeysfSX27s9FXH4EkY9PblblGNBRbGTTYi1vFgWcg7kAajwCU/X8pmVMBU6tD8Sc582iAMuZqp75e7Fk1DUlVBU6d995VammNWPfWzCetd+4ymPnmXNypszJmQug8nMgz5aPFz/3VvHSJdBzvZJTz3QcedaA3eG2UAfMIfZ3uhccv3jCPZIRytruVHcWqnHjYyZDe+a5c0zJGhNAcCd+17hwNxy/aGQogevTbdSn2+LcSWAay57mIogsngR5up1A/ENBGtuz0J8/BAA03v1xCaiihipqiCWjgQK4ueDy5dI1LsSnsT0LlA30K7+hf3gFAMoKUAL8uZkraPwm7BoXaOYK2pi8yaHNXEFr5gpafboNAA6YRFxXgarTM8+VvwOcQXEBdrc3cwUN19csbbqsbHgjvkihXjnEE2MOgO7pF1uUk5Qc1zVqSiiAe5+Ptb8fMVBl7YXRGeuefdk8DTeK9XcOsVmZxOnBSUbVVLzEKhvqT2H80eOXAHDy/l+Jr/96+hYAsLNbxl7Dyjx4M1Oipg0DA4o/kCoo2WZlEq+fTToL1WPX+6cHJxlgpnTV6+Ps249MSE7+cBk8rNkCnBjWz+9f/d5VnnkQeCk9P5KYoFiezMMyPqoeewQspeeB3XJpr2GFljoQPowdSWcdZn7lv9Wo3dZGggeVddSSA4o5v2mXh5mq7MpL4K4F+I2b7w10VwKC5jzw+rutgCBwKPymIsKgI8GHFTEslOw/cNcyyfgTT8gAAAAASUVORK5CYII=",
-            "data:image/webp;base64,UklGRi4BAABXRUJQVlA4TCIBAAAvEUAHEF9gJAASXkAk2bzgawe4gEneMBTZxv+4uhoFtBVAFsJRG0lqgy+CIaVBuiY1ikWQbVOx0R/sAYD/f0ZW5rOLTjOlNCP63IZc2y6Ao+1/2ub3+ME1W8p+/uVOeACD5MJEkuID2LpAmcl2aMuoW5TpeHXvENH/CQDAbDSGRfqP1HZoI2QQve08hdCsbA2VjbBQ7G3IbaCnNBdvQ9y3hkIV6tlvPw9Lobn0v3477UhybZ+fdSaecyHT+7P691eUGYeoPq/4UXczVOy8K/SVn3NdZrw49cNcsXJbciDn9cQDs4EwryaeMxtAyD6vtgFg1Zx38XfPDPyGUJoVC0BATM6TBRAZJogQEBmzS2QFRCOz0kQjIrJAzUDQYAEIiMgCAA==",
-            "https://sunflower-land.com/game-assets/fruit/orange/orange_tree.png",
-            "https://sunflower-land.com/game-assets/fruit/bush_shrub.png",
+      srcs: ["https://sunflower-land.com/game-assets/fruit/bush_shrub.png",
             "https://sunflower-land.com/game-assets/fruit/dead_tree.webp",
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAjCAYAAABsFtHvAAAAAXNSR0IArs4c6QAAA2dJREFUWIWtlkFLG1EQx/8r0aWQQlpIFSFqpHoytPWSFpoUhFbxVHr20K/QS3vxC1gPXj1LPoM0HgImhSQ9BMJ6CElxg7mkXVpDFUpUmh7WeTv79u1uog4Esu/tzO8/82ZeosHHsltrA/5c/PRF83v3phbxgy5kxwEAaSzbG1sYBImQxZIFiXZtZLfWBgTtmedifTWZBQBUUUOreOkJuLixMkitDxBLRoXYKmoAgFbx0leEJgewOjriiT5iySgAO/O8WcRqMou8WQQAWB1dBFvcWBlMpSaEDxcNQKxxHxfcD8yNApB1jQsAwFRqAgAQT/RhdXQsZMdd2ZMf7XMBY6Tc2NcQT/Q9JVc9cygZAQhKVYslo2I9nui7eiPCg1kdiJdkoCpruQJWR4fVsc+4hSrz1kVcbqLsQVmRo9XRBeysfSX27s9FXH4EkY9PblblGNBRbGTTYi1vFgWcg7kAajwCU/X8pmVMBU6tD8Sc582iAMuZqp75e7Fk1DUlVBU6d995VammNWPfWzCetd+4ymPnmXNypszJmQug8nMgz5aPFz/3VvHSJdBzvZJTz3QcedaA3eG2UAfMIfZ3uhccv3jCPZIRytruVHcWqnHjYyZDe+a5c0zJGhNAcCd+17hwNxy/aGQogevTbdSn2+LcSWAay57mIogsngR5up1A/ENBGtuz0J8/BAA03v1xCaiihipqiCWjgQK4ueDy5dI1LsSnsT0LlA30K7+hf3gFAMoKUAL8uZkraPwm7BoXaOYK2pi8yaHNXEFr5gpafboNAA6YRFxXgarTM8+VvwOcQXEBdrc3cwUN19csbbqsbHgjvkihXjnEE2MOgO7pF1uUk5Qc1zVqSiiAe5+Ptb8fMVBl7YXRGeuefdk8DTeK9XcOsVmZxOnBSUbVVLzEKhvqT2H80eOXAHDy/l+Jr/96+hYAsLNbxl7Dyjx4M1Oipg0DA4o/kCoo2WZlEq+fTToL1WPX+6cHJxlgpnTV6+Ps249MSE7+cBk8rNkCnBjWz+9f/d5VnnkQeCk9P5KYoFiezMMyPqoeewQspeeB3XJpr2GFljoQPowdSWcdZn7lv9Wo3dZGggeVddSSA4o5v2mXh5mq7MpL4K4F+I2b7w10VwKC5jzw+rutgCBwKPymIsKgI8GHFTEslOw/cNcyyfgTT8gAAAAASUVORK5CYII=",
+            "data:image/webp;base64,UklGRi4BAABXRUJQVlA4TCIBAAAvEUAHEF9gJAASXkAk2bzgawe4gEneMBTZxv+4uhoFtBVAFsJRG0lqgy+CIaVBuiY1ikWQbVOx0R/sAYD/f0ZW5rOLTjOlNCP63IZc2y6Ao+1/2ub3+ME1W8p+/uVOeACD5MJEkuID2LpAmcl2aMuoW5TpeHXvENH/CQDAbDSGRfqP1HZoI2QQve08hdCsbA2VjbBQ7G3IbaCnNBdvQ9y3hkIV6tlvPw9Lobn0v3477UhybZ+fdSaecyHT+7P691eUGYeoPq/4UXczVOy8K/SVn3NdZrw49cNcsXJbciDn9cQDs4EwryaeMxtAyD6vtgFg1Zx38XfPDPyGUJoVC0BATM6TBRAZJogQEBmzS2QFRCOz0kQjIrJAzUDQYAEIiMgCAA==",
+            "data:image/webp;base64,UklGRi4BAABXRUJQVlA4TCIBAAAvEUAHEF9gJJKUV5/g5zUKh0NTi86UoIaaSLaan9pExgAVHtBKhSIEKW0kBTpehcOhUfRfFiWcEAgkgW2/WADAbUuZQ13NNCtsvNv0l/Ra/8JzAMfZ/vTNZwXH/y9JO/Nu6efAWMn+FVbDRYJlhgMwTOgrRL2fDxHRfwFBEWsAcA1FOvUBQLOOrqYZNrFbDIPUbJTJ55EYaBZ+PDA1rC04GTt5wOH/0EqUk/bh+x7bZFx7bSGToTOpdulleRSs6x++u9cjezPaPHznwwczfti8XLhba9NRG0E2g8RZWycTxnvOAJZlebRdA3Qwr0c1ANCbhw8AgLV83y7s5NwsaJdXFYCK2K2SAogy94hQEeXcJVIV0VdeLdEXESlQGVAVFMoVAA==",
+            "https://sunflower-land.com/game-assets/fruit/orange/orange_tree.png",
             "https://sunflower-land.com/game-assets/fruit/apple/apple_tree.png",]
     },
     {
