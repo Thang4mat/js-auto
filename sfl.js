@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -273,7 +273,7 @@
   const panel = document.createElement("div");
   Object.assign(panel.style, {
     position: "fixed",
-    bottom: "200px",
+    bottom: "250px",
     right: "20px",
     zIndex: "2147483647",
     display: "none", // ẩn mặc định, nút tổng sẽ bật/tắt
@@ -312,7 +312,7 @@
   masterButton.textContent = "Menu";
   Object.assign(masterButton.style, {
     position: "fixed",
-    bottom: "150px",
+    bottom: "200px",
     right: "20px",
     zIndex: "2147483647",
     padding: "10px 16px",
