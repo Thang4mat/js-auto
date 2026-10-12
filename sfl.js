@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -104,7 +104,8 @@
       key: "TREES",
       color: "#a52a2a",
       srcs: ["https://sunflower-land.com/game-assets/resources/tree/Desert/summer_desert_tree.webp",
-            "https://sunflower-land.com/game-assets/resources/tree/Desert/autumn_desert_tree.webp"],
+            "https://sunflower-land.com/game-assets/resources/tree/Desert/autumn_desert_tree.webp",
+            "https://sunflower-land.com/game-assets/resources/tree/Desert/winter_desert_tree.webp",],
     },
     {
       key: "FERTILIZE",
