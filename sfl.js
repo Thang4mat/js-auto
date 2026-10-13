@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.6
+// @version      1.7
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -73,6 +73,8 @@
     "https://sunflower-land.com/game-assets/crops/artichoke/seedling.png",
     "https://sunflower-land.com/game-assets/crops/barley/seedling.png",
   ];
+  // Cây ở giai đoạn "almost" cũng cần bón phân: suy ra từ danh sách seedling (cùng tên cây).
+  const FERTILIZE_ALMOST = FERTILIZE.map((url) => url.replace("/seedling.png", "/almost.png"));
     const FERTILIZED = [
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAMAAACn6Q83AAAABGdBTUEAALGOfPtRkwAAACFQTFRFAAAAwMvcWmmIGBQl////JlxCY8dNJitEeMVop/+Ukv96pgoFnAAAAAt0Uk5TAP////////////99dn3VAAAAOElEQVQImVXMMQ4AMAgCQBck8f8PLqIdZLoEQoRCxoaZ/Koat8Yjm7URgQZwqFPXvGc9cX2ptZcPwv4Cs0IVRlAAAAAASUVORK5CYII=",
     ];
@@ -110,7 +112,7 @@
     {
       key: "FERTILIZE",
       color: "#FFBF00",
-      srcs: FERTILIZE,
+      srcs: [...FERTILIZE, ...FERTILIZE_ALMOST],
       filter: (img) => isFertilizeEligible(img),
     },
     {
@@ -134,6 +136,9 @@
   // (dùng chung vì trùng class thật trên trang), bên trong có thể chứa 1 div
   // chỉ báo trạng thái (ví dụ: đã bón phân) theo FERTILIZE_INDICATOR_SELECTOR.
   const FERTILIZE_INDICATOR_SELECTOR = "div.absolute.z-20.pointer-events-none.flex";
+  // Div bọc ảnh cây (có class cursor-pointer) nằm NGANG HÀNG với các div chỉ báo,
+  // nên phải lấy parent của nó mới là "ô đất" chứa cả ảnh cây lẫn div chỉ báo.
+  const PLOT_CLICKABLE_SELECTOR = "div.cursor-pointer";
   const TARGET_FERTILIZED = new Set(FERTILIZED);
 
   // Khoảng delay giữa mỗi click. Đã xác nhận thực tế trên trang này: 50-100ms
@@ -160,20 +165,23 @@
     return isMatchCloseDiv(el);
   }
 
-  // Điều kiện riêng cho nhóm FERTILIZE: chỉ click ô đất (seedling) khi ô đó
-  // CHƯA có chỉ báo "đã bón phân". Tương đương:
-  //   - plot không chứa div chỉ báo -> được click
-  //   - plot có chứa div chỉ báo, nhưng div đó không chứa img thuộc FERTILIZED -> được click
-  //   - plot có chứa div chỉ báo VÀ div đó chứa img thuộc FERTILIZED -> bỏ qua (đã bón phân rồi)
+  // Điều kiện riêng cho nhóm FERTILIZE: chỉ click ô đất (seedling) khi ô đó CHƯA bón phân.
+  // Ô đất có thể chứa NHIỀU div chỉ báo (FERTILIZE_INDICATOR_SELECTOR), mỗi div chứa img khác nhau.
+  //   - Đã bón phân: có ÍT NHẤT 1 div chỉ báo chứa <img> có src thuộc FERTILIZED -> bỏ qua
+  //   - Chưa bón phân: không div chỉ báo nào chứa img thuộc FERTILIZED
+  //     (kể cả không có div chỉ báo, hoặc có div chỉ báo nhưng chỉ chứa img khác) -> được click
   function isFertilizeEligible(img) {
-    const plot = img.closest(CONTAINER_SELECTOR);
+    // closest(CONTAINER_SELECTOR) một mình sẽ trả về chính div cursor-pointer (cũng có class
+    // "w-full h-full relative"), div này KHÔNG chứa div chỉ báo -> không bao giờ phát hiện được.
+    const clickable = img.closest(PLOT_CLICKABLE_SELECTOR);
+    const plot = clickable ? clickable.parentElement : img.closest(CONTAINER_SELECTOR);
     if (!plot) return true; // không xác định được plot -> không chặn, vẫn cho click
 
-    const indicator = plot.querySelector(FERTILIZE_INDICATOR_SELECTOR);
-    if (!indicator) return true; // plot không chứa div chỉ báo -> được click
-
-    const alreadyFertilized = [...indicator.querySelectorAll("img")].some((el) =>
-      TARGET_FERTILIZED.has(el.getAttribute("src"))
+    const alreadyFertilized = [...plot.querySelectorAll(FERTILIZE_INDICATOR_SELECTOR)].some(
+      (indicator) =>
+        [...indicator.querySelectorAll("img")].some((el) =>
+          TARGET_FERTILIZED.has(el.getAttribute("src"))
+        )
     );
     return !alreadyFertilized;
   }
@@ -254,10 +262,11 @@
     let targets = [...getContainer().querySelectorAll("img")].filter(
       (el) => group.targetSet.has(el.getAttribute("src"))
     );
+    const matchedCount = targets.length;
     if (typeof group.filter === "function") {
       targets = targets.filter(group.filter);
     }
-    console.log(`${group.key}: tìm thấy ${targets.length} ảnh khớp.`);
+    console.log(`${group.key}: tìm thấy ${matchedCount} ảnh khớp, ${targets.length} ảnh được click (${matchedCount - targets.length} bị loại bởi filter).`);
 
     for (const el of targets) {
       if (!el.isConnected) continue;
