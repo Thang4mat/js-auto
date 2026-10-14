@@ -75,9 +75,9 @@
   ];
   // Cây ở giai đoạn "almost" cũng cần bón phân: suy ra từ danh sách seedling (cùng tên cây).
   const FERTILIZE_ALMOST = FERTILIZE.map((url) => url.replace("/seedling.png", "/almost.png"));
-    const FERTILIZED = [
+  const FERTILIZED = [
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAMAAACn6Q83AAAABGdBTUEAALGOfPtRkwAAACFQTFRFAAAAwMvcWmmIGBQl////JlxCY8dNJitEeMVop/+Ukv96pgoFnAAAAAt0Uk5TAP////////////99dn3VAAAAOElEQVQImVXMMQ4AMAgCQBck8f8PLqIdZLoEQoRCxoaZ/Koat8Yjm7URgQZwqFPXvGc9cX2ptZcPwv4Cs0IVRlAAAAAASUVORK5CYII=",
-    ];
+  ];
   // ===== Danh sách chỉ click khi bấm nút thủ công =====
   // Thêm nhóm mới: thêm 1 dòng vào mảng này, mọi logic/nút bên dưới tự chạy theo.
   const MANUAL_GROUPS = [
@@ -107,7 +107,8 @@
       color: "#a52a2a",
       srcs: ["https://sunflower-land.com/game-assets/resources/tree/Desert/summer_desert_tree.webp",
             "https://sunflower-land.com/game-assets/resources/tree/Desert/autumn_desert_tree.webp",
-            "https://sunflower-land.com/game-assets/resources/tree/Desert/winter_desert_tree.webp",],
+            "https://sunflower-land.com/game-assets/resources/tree/Desert/winter_desert_tree.webp",
+            "https://sunflower-land.com/game-assets/resources/tree/Desert/spring_desert_tree.webp",],
     },
     {
       key: "FERTILIZE",
