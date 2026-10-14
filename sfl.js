@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.8
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -85,11 +85,13 @@
       key: "GOLD",
       color: "#ffbf00",
       srcs: ["https://sunflower-land.com/game-assets/resources/gold_small.png"],
+      filter: (img) => isResourceClickable(img),
     },
     {
       key: "IRON",
       color: "#a9a9a9",
       srcs: ["https://sunflower-land.com/game-assets/resources/iron_small.png"],
+      filter: (img) => isResourceClickable(img),
     },
     {
       key: "FRUIT",
@@ -140,6 +142,9 @@
   // Div bọc ảnh cây (có class cursor-pointer) nằm NGANG HÀNG với các div chỉ báo,
   // nên phải lấy parent của nó mới là "ô đất" chứa cả ảnh cây lẫn div chỉ báo.
   const PLOT_CLICKABLE_SELECTOR = "div.cursor-pointer";
+  // Tài nguyên (IRON, GOLD) chỉ click được khi ảnh nằm TRỰC TIẾP trong div cursor-pointer.
+  // Trạng thái chưa sẵn sàng: ảnh nằm trong div.opacity-50 bên trong div.pointer-events-none.
+  const RESOURCE_CLICKABLE_SELECTOR = "div.cursor-pointer";
   const TARGET_FERTILIZED = new Set(FERTILIZED);
 
   // Khoảng delay giữa mỗi click. Đã xác nhận thực tế trên trang này: 50-100ms
@@ -164,6 +169,10 @@
 
   function isMatch(el) {
     return isMatchCloseDiv(el);
+  }
+
+  function isResourceClickable(img) {
+    return img.parentElement?.matches(RESOURCE_CLICKABLE_SELECTOR) ?? false;
   }
 
   // Điều kiện riêng cho nhóm FERTILIZE: chỉ click ô đất (seedling) khi ô đó CHƯA bón phân.
