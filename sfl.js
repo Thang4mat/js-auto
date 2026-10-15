@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.8
+// @version      1.9
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -85,13 +85,13 @@
       key: "GOLD",
       color: "#ffbf00",
       srcs: ["https://sunflower-land.com/game-assets/resources/gold_small.png"],
-      filter: (img) => isResourceClickable(img),
+      filter: (img) => isResourceClickable(img, 2), // GOLD: ảnh nằm trong div.relative, div này nằm trong div.cursor-pointer
     },
     {
       key: "IRON",
       color: "#a9a9a9",
       srcs: ["https://sunflower-land.com/game-assets/resources/iron_small.png"],
-      filter: (img) => isResourceClickable(img),
+      filter: (img) => isResourceClickable(img, 1), // IRON: ảnh nằm trực tiếp trong div.cursor-pointer
     },
     {
       key: "FRUIT",
@@ -132,6 +132,7 @@
     // },
   ];
 
+
   const CLOSE_DIV_CLASS = "mb-1 w-full flex justify-center";
   const CLOSE_DIV_TEXT = "Close";
   const CONTAINER_SELECTOR = "div.w-full.h-full.relative";
@@ -142,23 +143,24 @@
   // Div bọc ảnh cây (có class cursor-pointer) nằm NGANG HÀNG với các div chỉ báo,
   // nên phải lấy parent của nó mới là "ô đất" chứa cả ảnh cây lẫn div chỉ báo.
   const PLOT_CLICKABLE_SELECTOR = "div.cursor-pointer";
-  // Tài nguyên (IRON, GOLD) chỉ click được khi ảnh nằm TRỰC TIẾP trong div cursor-pointer.
-  // Trạng thái chưa sẵn sàng: ảnh nằm trong div.opacity-50 bên trong div.pointer-events-none.
+  // Tài nguyên (IRON, GOLD) chỉ click được khi div cursor-pointer là tổ tiên cách ảnh đúng
+  // `levels` cấp (IRON: 1, GOLD: 2). Trạng thái chưa sẵn sàng: ảnh nằm trong div.opacity-50
+  // bên trong div.pointer-events-none, không có div cursor-pointer ở cấp đó.
   const RESOURCE_CLICKABLE_SELECTOR = "div.cursor-pointer";
   const TARGET_FERTILIZED = new Set(FERTILIZED);
-
+ 
   // Khoảng delay giữa mỗi click. Đã xác nhận thực tế trên trang này: 50-100ms
   // không gây bỏ sót phần tử (nhờ findAllMatches() quét lại toàn bộ DOM mỗi lần,
   // không khóa theo dataset). Nếu sau này đổi sang cơ chế khác hoặc thấy bỏ sót
   // trở lại, cân nhắc tăng lên 1000-2000ms như đã kiểm chứng ở lần test trước.
   const CLICK_DELAY_MIN_MS = 50;
   const CLICK_DELAY_MAX_MS = 100;
-
+ 
   MANUAL_GROUPS.forEach((g) => {
     g.targetSet = new Set(g.srcs);
     console.log(`${g.key}: ${g.srcs.length} -> unique ${g.targetSet.size}`);
   });
-
+ 
   function isMatchCloseDiv(el) {
     return (
       el.tagName === "DIV" &&
@@ -166,15 +168,17 @@
       el.textContent.trim() === CLOSE_DIV_TEXT
     );
   }
-
+ 
   function isMatch(el) {
     return isMatchCloseDiv(el);
   }
-
-  function isResourceClickable(img) {
-    return img.parentElement?.matches(RESOURCE_CLICKABLE_SELECTOR) ?? false;
+ 
+  function isResourceClickable(img, levels) {
+    let node = img;
+    for (let i = 0; i < levels; i++) node = node?.parentElement;
+    return node?.matches(RESOURCE_CLICKABLE_SELECTOR) ?? false;
   }
-
+ 
   // Điều kiện riêng cho nhóm FERTILIZE: chỉ click ô đất (seedling) khi ô đó CHƯA bón phân.
   // Ô đất có thể chứa NHIỀU div chỉ báo (FERTILIZE_INDICATOR_SELECTOR), mỗi div chứa img khác nhau.
   //   - Đã bón phân: có ÍT NHẤT 1 div chỉ báo chứa <img> có src thuộc FERTILIZED -> bỏ qua
@@ -186,7 +190,7 @@
     const clickable = img.closest(PLOT_CLICKABLE_SELECTOR);
     const plot = clickable ? clickable.parentElement : img.closest(CONTAINER_SELECTOR);
     if (!plot) return true; // không xác định được plot -> không chặn, vẫn cho click
-
+ 
     const alreadyFertilized = [...plot.querySelectorAll(FERTILIZE_INDICATOR_SELECTOR)].some(
       (indicator) =>
         [...indicator.querySelectorAll("img")].some((el) =>
@@ -195,33 +199,33 @@
     );
     return !alreadyFertilized;
   }
-
+ 
   function getContainer() {
     return document.querySelector(CONTAINER_SELECTOR) || document;
   }
-
+ 
   function randomDelay(minMs = CLICK_DELAY_MIN_MS, maxMs = CLICK_DELAY_MAX_MS) {
     return minMs + Math.random() * (maxMs - minMs);
   }
-
+ 
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
+ 
   function logClick(prefix, el) {
     console.log(prefix, el.tagName === "IMG" ? el.getAttribute("src")?.slice(0, 40) : el.textContent.trim());
   }
-
+ 
   // Quét live DOM, trả về TOÀN BỘ phần tử đang khớp tại thời điểm gọi.
   // Không đánh dấu, không khóa node nào (tránh bỏ sót do trạng thái trung gian).
   function findAllMatches() {
     return [...getContainer().querySelectorAll("div")].filter(isMatch);
   }
-
+ 
   // ===== Vòng auto-click liên tục (Close div) =====
   let autoBusy = false;
   let autoPendingRerun = false;
-
+ 
   async function runAutoCycle() {
     if (autoBusy) {
       // Có mutation xảy ra trong lúc đang chạy -> không bỏ qua,
@@ -241,9 +245,9 @@
     } while (autoPendingRerun); // có mutation mới xảy ra trong lúc xử lý -> quét lại ngay
     autoBusy = false;
   }
-
+ 
   runAutoCycle();
-
+ 
   const observer = new MutationObserver(() => runAutoCycle());
   observer.observe(getContainer(), {
     childList: true,
@@ -252,7 +256,7 @@
     attributeFilter: ["class", "src"],
     characterData: true,
   });
-
+ 
   // ===== Click thủ công dùng chung cho mọi nhóm trong MANUAL_GROUPS =====
   function setButtonState(btn, running, label) {
     if (!btn) return;
@@ -260,7 +264,7 @@
     btn.disabled = running;
     btn.style.opacity = running ? "0.6" : "1";
   }
-
+ 
   async function runManualClick(group) {
     if (group.busy) {
       console.log(`${group.key}: đang chạy, bỏ qua lần bấm này.`);
@@ -268,7 +272,7 @@
     }
     group.busy = true;
     setButtonState(group.button, true, group.key);
-
+ 
     let targets = [...getContainer().querySelectorAll("img")].filter(
       (el) => group.targetSet.has(el.getAttribute("src"))
     );
@@ -277,18 +281,18 @@
       targets = targets.filter(group.filter);
     }
     console.log(`${group.key}: tìm thấy ${matchedCount} ảnh khớp, ${targets.length} ảnh được click (${matchedCount - targets.length} bị loại bởi filter).`);
-
+ 
     for (const el of targets) {
       if (!el.isConnected) continue;
       el.click();
       logClick(`Đã click (${group.key}):`, el);
       await sleep(randomDelay());
     }
-
+ 
     group.busy = false;
     setButtonState(group.button, false, group.key);
   }
-
+ 
   // ===== Panel chứa các nút thủ công, mặc định ẩn =====
   const panel = document.createElement("div");
   Object.assign(panel.style, {
@@ -301,7 +305,7 @@
     gap: "8px",
   });
   document.body.appendChild(panel);
-
+ 
   function makeChildButton(label, color) {
     const btn = document.createElement("button");
     btn.textContent = label;
@@ -319,14 +323,14 @@
     panel.appendChild(btn);
     return btn;
   }
-
+ 
   // Tự tạo 1 nút cho mỗi nhóm trong MANUAL_GROUPS, gắn vào panel
   MANUAL_GROUPS.forEach((group) => {
     group.busy = false;
     group.button = makeChildButton(group.key, group.color);
     group.button.addEventListener("click", () => runManualClick(group));
   });
-
+ 
   // ===== Nút tổng: chỉ bật/tắt panel =====
   const masterButton = document.createElement("button");
   masterButton.textContent = "Menu";
