@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      1.9
+// @version      2.0
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -47,6 +47,7 @@
     "https://sunflower-land.com/game-assets/crops/artichoke/plant.png",
     "https://sunflower-land.com/game-assets/crops/barley/plant.png",
     "https://sunflower-land.com/game-assets/crops/soil2.png",
+    "https://sunflower-land.com/game-assets/crops/crystal_leaf/plant.png",
   ];
     const FERTILIZE = [
     "https://sunflower-land.com/game-assets/crops/sunflower/seedling.png",
@@ -72,6 +73,7 @@
     "https://sunflower-land.com/game-assets/crops/kale/seedling.png",
     "https://sunflower-land.com/game-assets/crops/artichoke/seedling.png",
     "https://sunflower-land.com/game-assets/crops/barley/seedling.png",
+    "https://sunflower-land.com/game-assets/crops/crystal_leaf/seedling.png",
   ];
   // Cây ở giai đoạn "almost" cũng cần bón phân: suy ra từ danh sách seedling (cùng tên cây).
   const FERTILIZE_ALMOST = FERTILIZE.map((url) => url.replace("/seedling.png", "/almost.png"));
