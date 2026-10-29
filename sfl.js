@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -268,13 +268,25 @@
     btn.style.opacity = running ? "0.6" : "1";
   }
  
+  // Khóa chung: tại 1 thời điểm chỉ có 1 nhóm được chạy, các nút còn lại bị vô hiệu hóa.
+  let runningGroup = null;
+ 
+  function setOtherButtonsLocked(locked) {
+    MANUAL_GROUPS.forEach((g) => {
+      if (g === runningGroup) return;
+      g.button.disabled = locked;
+      g.button.style.opacity = locked ? "0.4" : "1";
+    });
+  }
+ 
   async function runManualClick(group) {
-    if (group.busy) {
-      console.log(`${group.key}: đang chạy, bỏ qua lần bấm này.`);
+    if (runningGroup) {
+      console.log(`${group.key}: đang chạy ${runningGroup.key}, bỏ qua lần bấm này.`);
       return;
     }
-    group.busy = true;
+    runningGroup = group;
     setButtonState(group.button, true, group.key);
+    setOtherButtonsLocked(true);
  
     let targets = [...getContainer().querySelectorAll("img")].filter(
       (el) => group.targetSet.has(el.getAttribute("src"))
@@ -285,15 +297,19 @@
     }
     console.log(`${group.key}: tìm thấy ${matchedCount} ảnh khớp, ${targets.length} ảnh được click (${matchedCount - targets.length} bị loại bởi filter).`);
  
-    for (const el of targets) {
-      if (!el.isConnected) continue;
-      el.click();
-      logClick(`Đã click (${group.key}):`, el);
-      await sleep(randomDelay());
+    try {
+      for (const el of targets) {
+        if (!el.isConnected) continue;
+        el.click();
+        logClick(`Đã click (${group.key}):`, el);
+        await sleep(randomDelay());
+      }
+    } finally {
+      // Luôn nhả khóa kể cả khi có lỗi giữa chừng, tránh kẹt vĩnh viễn mọi nút.
+      setOtherButtonsLocked(false);
+      setButtonState(group.button, false, group.key);
+      runningGroup = null;
     }
- 
-    group.busy = false;
-    setButtonState(group.button, false, group.key);
   }
  
   // ===== Panel chứa các nút thủ công, mặc định ẩn =====
@@ -329,7 +345,6 @@
  
   // Tự tạo 1 nút cho mỗi nhóm trong MANUAL_GROUPS, gắn vào panel
   MANUAL_GROUPS.forEach((group) => {
-    group.busy = false;
     group.button = makeChildButton(group.key, group.color);
     group.button.addEventListener("click", () => runManualClick(group));
   });
