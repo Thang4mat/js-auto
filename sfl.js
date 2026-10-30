@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.3
+// @version      2.4
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -280,12 +280,12 @@
     });
   }
  
-  // Mô phỏng double-click như trình duyệt: click, click, rồi sự kiện dblclick.
+  // Game chỉ lắng nghe onClick (đã kiểm tra props React), nên double-click = 2 lần click liên tiếp,
+  // không bắn thêm sự kiện dblclick.
   async function doubleClick(el) {
     el.click();
     await sleep(randomDelay());
     el.click();
-    el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, cancelable: true, view: window }));
   }
  
   async function runManualClick(group) {
