@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -125,6 +125,7 @@
       key: "CROPS",
       color: "#16a34a",
       srcs: SEEDS,
+      doubleClick: true, // mỗi ảnh được double-click thay vì click đơn
     },
 
     // Thêm nhóm mới tại đây, ví dụ:
@@ -279,6 +280,14 @@
     });
   }
  
+  // Mô phỏng double-click như trình duyệt: click, click, rồi sự kiện dblclick.
+  async function doubleClick(el) {
+    el.click();
+    await sleep(randomDelay());
+    el.click();
+    el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, cancelable: true, view: window }));
+  }
+ 
   async function runManualClick(group) {
     if (runningGroup) {
       console.log(`${group.key}: đang chạy ${runningGroup.key}, bỏ qua lần bấm này.`);
@@ -300,8 +309,13 @@
     try {
       for (const el of targets) {
         if (!el.isConnected) continue;
-        el.click();
-        logClick(`Đã click (${group.key}):`, el);
+        if (group.doubleClick) {
+          await doubleClick(el);
+          logClick(`Đã double-click (${group.key}):`, el);
+        } else {
+          el.click();
+          logClick(`Đã click (${group.key}):`, el);
+        }
         await sleep(randomDelay());
       }
     } finally {
