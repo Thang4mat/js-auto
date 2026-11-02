@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.4.3
+// @version      2.4.4
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -12,13 +12,15 @@
 // ==/UserScript==
 
 (function () {
-  // ===== Guard: chỉ chạy trên đúng trang =====
+  // ===== Guard: chỉ hoạt động trên đúng trang =====
   const ALLOWED_HOST = "sunflower-land.com";
   const ALLOWED_PATH = "/play/";
+  const PAGE_CHECK_INTERVAL_MS = 500;
 
-  if (location.hostname !== ALLOWED_HOST || location.pathname !== ALLOWED_PATH) {
-    console.log("SFL script bỏ qua: không đúng trang (" + location.href + ")");
-    return;
+  // Trang là SPA: URL có thể đổi mà không tải lại trang, nên phải kiểm tra lại liên tục
+  // thay vì chỉ kiểm tra 1 lần lúc script khởi động.
+  function isAllowedPage() {
+    return location.hostname === ALLOWED_HOST && location.pathname === ALLOWED_PATH;
   }
 
   // ===== Dữ liệu =====
@@ -237,6 +239,7 @@
   let autoPendingRerun = false;
  
   async function runAutoCycle() {
+    if (!isAllowedPage()) return;
     if (autoBusy) {
       // Có mutation xảy ra trong lúc đang chạy -> không bỏ qua,
       // mà đánh dấu để chạy thêm 1 vòng quét nữa ngay sau khi vòng hiện tại xong.
@@ -392,4 +395,14 @@
     panel.style.display = isHidden ? "flex" : "none";
   });
   document.body.appendChild(masterButton);
+ 
+  // ===== Ẩn toàn bộ nút khi không đúng ALLOWED_HOST / ALLOWED_PATH =====
+  function syncButtonsVisibility() {
+    const allowed = isAllowedPage();
+    masterButton.style.display = allowed ? "" : "none";
+    if (!allowed) panel.style.display = "none";
+  }
+ 
+  syncButtonsVisibility();
+  setInterval(syncButtonsVisibility, PAGE_CHECK_INTERVAL_MS);
 })();
