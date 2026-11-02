@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.4.2
+// @version      2.4.3
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -83,6 +83,12 @@
   // ===== Danh sách chỉ click khi bấm nút thủ công =====
   // Thêm nhóm mới: thêm 1 dòng vào mảng này, mọi logic/nút bên dưới tự chạy theo.
   const MANUAL_GROUPS = [
+    {
+      key: "ROCK",
+      color: "#313131",
+      srcs: ["https://sunflower-land.com/game-assets/resources/stone_small.png"],
+      filter: (img) => isResourceClickable(img, 1),
+    },
     {
       key: "GOLD",
       color: "#ffbf00",
@@ -330,7 +336,7 @@
   const panel = document.createElement("div");
   Object.assign(panel.style, {
     position: "fixed",
-    bottom: "400px",
+    bottom: "350px",
     left: "20px",
     zIndex: "2147483647",
     display: "none", // ẩn mặc định, nút tổng sẽ bật/tắt
@@ -368,7 +374,7 @@
   masterButton.textContent = "Menu";
   Object.assign(masterButton.style, {
     position: "fixed",
-    bottom: "350px",
+    bottom: "300px",
     left: "20px",
     zIndex: "2147483647",
     padding: "10px 16px",
