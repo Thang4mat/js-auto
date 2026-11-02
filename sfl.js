@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.4.4
+// @version      2.4.5
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -15,12 +15,19 @@
   // ===== Guard: chỉ hoạt động trên đúng trang =====
   const ALLOWED_HOST = "sunflower-land.com";
   const ALLOWED_PATH = "/play/";
+  // Chỉ 2 URL hợp lệ: /play/ (hash rỗng) và /play/#/. Mọi hash khác (vd /play/#/farm) và mọi query đều không hợp lệ.
+  const ALLOWED_HASHES = ["", "#/"];
   const PAGE_CHECK_INTERVAL_MS = 500;
 
   // Trang là SPA: URL có thể đổi mà không tải lại trang, nên phải kiểm tra lại liên tục
   // thay vì chỉ kiểm tra 1 lần lúc script khởi động.
   function isAllowedPage() {
-    return location.hostname === ALLOWED_HOST && location.pathname === ALLOWED_PATH;
+    return (
+      location.hostname === ALLOWED_HOST &&
+      location.pathname === ALLOWED_PATH &&
+      location.search === "" &&
+      ALLOWED_HASHES.includes(location.hash)
+    );
   }
 
   // ===== Dữ liệu =====
