@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.4.5
+// @version      2.5.0
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -86,9 +86,29 @@
   ];
   // Cây ở giai đoạn "almost" cũng cần bón phân: suy ra từ danh sách seedling (cùng tên cây).
   const FERTILIZE_ALMOST = FERTILIZE.map((url) => url.replace("/seedling.png", "/almost.png"));
+  const FERTILIZE_HALFWAY = FERTILIZE.map((url) => url.replace("/seedling.png", "/halfway.png"));
+  // Ô đất trống và ảnh hạt trong hotbar (seed.png suy ra từ plant.png của SEEDS, bỏ soil2.png).
+  const EMPTY_SOIL = "https://sunflower-land.com/game-assets/crops/soil2.png";
+  const SEED_SLOT_SRCS = new Set(
+    SEEDS.filter((url) => url !== EMPTY_SOIL).map((url) => url.replace("/plant.png", "/seed.png"))
+  );
+  // Slot đầu của hotbar; badge số lượng hạt nằm trong div.absolute.z-10 của slot.
+  const FIRST_HOTBAR_SLOT_SELECTOR = "div.flex.flex-col.items-center > div.relative:first-child";
+  const SEED_COUNT_BADGE_SELECTOR = "div.absolute.z-10";
   const FERTILIZED = [
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAMAAACn6Q83AAAABGdBTUEAALGOfPtRkwAAACFQTFRFAAAAwMvcWmmIGBQl////JlxCY8dNJitEeMVop/+Ukv96pgoFnAAAAAt0Uk5TAP////////////99dn3VAAAAOElEQVQImVXMMQ4AMAgCQBck8f8PLqIdZLoEQoRCxoaZ/Koat8Yjm7URgQZwqFPXvGc9cX2ptZcPwv4Cs0IVRlAAAAAASUVORK5CYII=",
   ];
+  // Điều kiện dừng của nhóm CROPS: ô đất trống (soil2.png) + slot hạt đầu hotbar còn hiển thị hạt
+  // nhưng không còn badge số lượng (hết hạt). Slot đầu không chứa hạt -> không dừng.
+  function isEmptySoilWithoutSeeds(img) {
+    if (img.getAttribute("src") !== EMPTY_SOIL) return false;
+    const seedSlot = [...document.querySelectorAll(FIRST_HOTBAR_SLOT_SELECTOR)].find((slot) =>
+      [...slot.querySelectorAll("img")].some((el) => SEED_SLOT_SRCS.has(el.getAttribute("src")))
+    );
+    if (!seedSlot) return false;
+    return seedSlot.querySelector(SEED_COUNT_BADGE_SELECTOR) === null;
+  }
+
   // ===== Danh sách chỉ click khi bấm nút thủ công =====
   // Thêm nhóm mới: thêm 1 dòng vào mảng này, mọi logic/nút bên dưới tự chạy theo.
   const MANUAL_GROUPS = [
@@ -133,7 +153,7 @@
     {
       key: "FERTILIZE",
       color: "#FFBF00",
-      srcs: [...FERTILIZE, ...FERTILIZE_ALMOST],
+      srcs: [...FERTILIZE, ...FERTILIZE_ALMOST, ...FERTILIZE_HALFWAY],
       filter: (img) => isFertilizeEligible(img),
     },
     {
@@ -141,6 +161,7 @@
       color: "#16a34a",
       srcs: SEEDS,
       doubleClick: true, // mỗi ảnh được double-click thay vì click đơn
+      stopWhen: (img) => isEmptySoilWithoutSeeds(img), // dừng cả nhóm khi gặp ô đất trống mà hotbar hết hạt
     },
 
     // Thêm nhóm mới tại đây, ví dụ:
@@ -325,6 +346,11 @@
     try {
       for (const el of targets) {
         if (!el.isConnected) continue;
+        // Kiểm tra tại thời điểm click vì hạt cạn dần trong lúc chạy.
+        if (group.stopWhen?.(el)) {
+          console.log(`${group.key}: hết hạt, gặp ô đất trống, dừng.`);
+          break;
+        }
         if (group.doubleClick) {
           await doubleClick(el);
           logClick(`Đã double-click (${group.key}):`, el);
