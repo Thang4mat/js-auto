@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.5.0
+// @version      2.6.0
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -369,17 +369,23 @@
   }
  
   // ===== Panel chứa các nút thủ công, mặc định ẩn =====
+  // menuContainer: điểm neo duy nhất của nút Menu + panel; kéo container thì cả hai di chuyển theo.
+  const menuContainer = document.createElement("div");
+  Object.assign(menuContainer.style, {
+    position: "fixed",
+    zIndex: "2147483647",
+  });
+  document.body.appendChild(menuContainer);
+
   const panel = document.createElement("div");
   Object.assign(panel.style, {
-    position: "fixed",
-    bottom: "350px",
-    left: "20px",
-    zIndex: "2147483647",
+    position: "absolute",
+    left: "0px",
     display: "none", // ẩn mặc định, nút tổng sẽ bật/tắt
     flexDirection: "column",
     gap: "8px",
   });
-  document.body.appendChild(panel);
+  menuContainer.appendChild(panel);
  
   function makeChildButton(label, color) {
     const btn = document.createElement("button");
@@ -409,10 +415,7 @@
   const masterButton = document.createElement("button");
   masterButton.textContent = "Menu";
   Object.assign(masterButton.style, {
-    position: "fixed",
-    bottom: "300px",
-    left: "20px",
-    zIndex: "2147483647",
+    touchAction: "none", // để trình duyệt không cuộn trang khi đang kéo nút
     padding: "10px 16px",
     background: "#111827",
     color: "#fff",
@@ -423,11 +426,71 @@
     cursor: "pointer",
     boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
   });
+  menuContainer.appendChild(masterButton);
+
+  // ===== Kéo nút Menu: vị trí tính theo left/bottom, lưu vào localStorage =====
+  const MENU_POSITION_KEY = "sfl.menuPosition";
+  const DEFAULT_MENU_POSITION = { left: 20, bottom: 300 };
+  const DRAG_THRESHOLD_PX = 5; // di chuyển dưới ngưỡng này vẫn tính là bấm
+  const PANEL_GAP_PX = 12;
+
+  let menuPosition;
+  let dragStart = null;
+  let dragged = false;
+
+  function clampMenuPosition(pos) {
+    return {
+      left: Math.min(Math.max(pos.left, 0), window.innerWidth - masterButton.offsetWidth),
+      bottom: Math.min(Math.max(pos.bottom, 0), window.innerHeight - masterButton.offsetHeight),
+    };
+  }
+
+  function applyMenuPosition(pos) {
+    menuPosition = clampMenuPosition(pos);
+    menuContainer.style.left = `${menuPosition.left}px`;
+    menuContainer.style.bottom = `${menuPosition.bottom}px`;
+    // Nút ở nửa trên màn hình thì mở panel xuống dưới, ngược lại mở lên trên.
+    const opensDown = menuPosition.bottom + masterButton.offsetHeight / 2 > window.innerHeight / 2;
+    Object.assign(panel.style, opensDown
+      ? { top: "100%", bottom: "auto", marginTop: `${PANEL_GAP_PX}px`, marginBottom: "0px" }
+      : { top: "auto", bottom: "100%", marginTop: "0px", marginBottom: `${PANEL_GAP_PX}px` });
+  }
+
+  function endDrag() {
+    if (!dragStart) return;
+    dragStart = null;
+    if (dragged) localStorage.setItem(MENU_POSITION_KEY, JSON.stringify(menuPosition));
+  }
+
+  masterButton.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    dragged = false;
+    dragStart = { x: e.clientX, y: e.clientY, left: menuPosition.left, bottom: menuPosition.bottom };
+    masterButton.setPointerCapture(e.pointerId);
+  });
+  masterButton.addEventListener("pointermove", (e) => {
+    if (!dragStart) return;
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    if (!dragged && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+    dragged = true;
+    applyMenuPosition({ left: dragStart.left + dx, bottom: dragStart.bottom - dy });
+  });
+  masterButton.addEventListener("pointerup", endDrag);
+  masterButton.addEventListener("pointercancel", endDrag);
+  window.addEventListener("resize", () => applyMenuPosition(menuPosition));
+
   masterButton.addEventListener("click", () => {
+    if (dragged) { // click sinh ra sau khi nhả chuột lúc kéo: bỏ qua, không toggle
+      dragged = false;
+      return;
+    }
     const isHidden = panel.style.display === "none";
     panel.style.display = isHidden ? "flex" : "none";
   });
-  document.body.appendChild(masterButton);
+
+  const savedMenuPosition = localStorage.getItem(MENU_POSITION_KEY);
+  applyMenuPosition(savedMenuPosition === null ? DEFAULT_MENU_POSITION : JSON.parse(savedMenuPosition));
  
   // ===== Ẩn toàn bộ nút khi không đúng ALLOWED_HOST / ALLOWED_PATH =====
   function syncButtonsVisibility() {
