@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.6.0
+// @version      2.6.1
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -193,8 +193,8 @@
   // không gây bỏ sót phần tử (nhờ findAllMatches() quét lại toàn bộ DOM mỗi lần,
   // không khóa theo dataset). Nếu sau này đổi sang cơ chế khác hoặc thấy bỏ sót
   // trở lại, cân nhắc tăng lên 1000-2000ms như đã kiểm chứng ở lần test trước.
-  const CLICK_DELAY_MIN_MS = 50;
-  const CLICK_DELAY_MAX_MS = 100;
+  const CLICK_DELAY_MIN_MS = 10;
+  const CLICK_DELAY_MAX_MS = 30;
  
   MANUAL_GROUPS.forEach((g) => {
     g.targetSet = new Set(g.srcs);
