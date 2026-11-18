@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.6.3
+// @version      2.6.4
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -150,6 +150,7 @@
             "https://sunflower-land.com/game-assets/resources/tree/Desert/winter_desert_tree.webp",
             "https://sunflower-land.com/game-assets/resources/tree/Desert/spring_desert_tree.webp",],
       clicks: 3, // mỗi ảnh được click 3 lần liên tiếp
+      targetSelector: "div.cursor-pointer", // sau click đầu game thay img bằng spritesheet, nên click div bao quanh (không bị thay)
     },
     {
       key: "FERTILIZE",
@@ -162,7 +163,6 @@
       color: "#16a34a",
       srcs: SEEDS,
       clicks: 2, // mỗi ảnh được click 2 lần liên tiếp
-      clickDelay: false, // không delay giữa 2 lần click trên cùng 1 ảnh (delay giữa các ảnh vẫn dùng chung)
       stopWhen: (img) => isEmptySoilWithoutSeeds(img), // dừng cả nhóm khi gặp ô đất trống mà hotbar hết hạt
     },
 
@@ -193,7 +193,7 @@
  
   // Khoảng delay giữa mỗi click.
   const CLICK_DELAY_MIN_MS = 10;
-  const CLICK_DELAY_MAX_MS = 30;
+  const CLICK_DELAY_MAX_MS = 20;
  
   MANUAL_GROUPS.forEach((g) => {
     g.targetSet = new Set(g.srcs);
@@ -318,9 +318,9 @@
  
   // Game chỉ lắng nghe onClick (đã kiểm tra props React), nên click nhiều lần = N lần click liên tiếp,
   // không bắn thêm sự kiện dblclick.
-  async function multiClick(el, times, delayed) {
+  async function multiClick(el, times) {
     for (let i = 0; i < times; i++) {
-      if (i > 0 && delayed) await sleep(randomDelay());
+      if (i > 0) await sleep(randomDelay());
       el.click();
     }
   }
@@ -352,7 +352,11 @@
           break;
         }
         const times = group.clicks ?? 1;
-        await multiClick(el, times, group.clickDelay !== false);
+        const target = group.targetSelector ? el.closest(group.targetSelector) : el;
+        if (!target) {
+          throw new Error(`${group.key}: không tìm thấy ${group.targetSelector} bao quanh ảnh.`);
+        }
+        await multiClick(target, times);
         logClick(`Đã click x${times} (${group.key}):`, el);
         await sleep(randomDelay());
       }
