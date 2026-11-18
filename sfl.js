@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SFL
 // @namespace    http://tampermonkey.net/
-// @version      2.6.2
+// @version      2.6.3
 // @description  SFL auto.
 // @author       You
 // @match        https://sunflower-land.com/play/*
@@ -162,7 +162,7 @@
       color: "#16a34a",
       srcs: SEEDS,
       clicks: 2, // mỗi ảnh được click 2 lần liên tiếp
-      delay: false, // không delay giữa các lần click và giữa các ảnh
+      clickDelay: false, // không delay giữa 2 lần click trên cùng 1 ảnh (delay giữa các ảnh vẫn dùng chung)
       stopWhen: (img) => isEmptySoilWithoutSeeds(img), // dừng cả nhóm khi gặp ô đất trống mà hotbar hết hạt
     },
 
@@ -352,10 +352,9 @@
           break;
         }
         const times = group.clicks ?? 1;
-        const delayed = group.delay !== false;
-        await multiClick(el, times, delayed);
+        await multiClick(el, times, group.clickDelay !== false);
         logClick(`Đã click x${times} (${group.key}):`, el);
-        if (delayed) await sleep(randomDelay());
+        await sleep(randomDelay());
       }
     } finally {
       // Luôn nhả khóa kể cả khi có lỗi giữa chừng, tránh kẹt vĩnh viễn mọi nút.
