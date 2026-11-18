@@ -149,6 +149,7 @@
             "https://sunflower-land.com/game-assets/resources/tree/Desert/autumn_desert_tree.webp",
             "https://sunflower-land.com/game-assets/resources/tree/Desert/winter_desert_tree.webp",
             "https://sunflower-land.com/game-assets/resources/tree/Desert/spring_desert_tree.webp",],
+      clicks: 3, // mỗi ảnh được click 3 lần liên tiếp
     },
     {
       key: "FERTILIZE",
@@ -160,7 +161,8 @@
       key: "CROPS",
       color: "#16a34a",
       srcs: SEEDS,
-      doubleClick: true, // mỗi ảnh được double-click thay vì click đơn
+      clicks: 2, // mỗi ảnh được click 2 lần liên tiếp
+      delay: false, // không delay giữa các lần click và giữa các ảnh
       stopWhen: (img) => isEmptySoilWithoutSeeds(img), // dừng cả nhóm khi gặp ô đất trống mà hotbar hết hạt
     },
 
@@ -189,10 +191,7 @@
   const RESOURCE_CLICKABLE_SELECTOR = "div.cursor-pointer";
   const TARGET_FERTILIZED = new Set(FERTILIZED);
  
-  // Khoảng delay giữa mỗi click. Đã xác nhận thực tế trên trang này: 50-100ms
-  // không gây bỏ sót phần tử (nhờ findAllMatches() quét lại toàn bộ DOM mỗi lần,
-  // không khóa theo dataset). Nếu sau này đổi sang cơ chế khác hoặc thấy bỏ sót
-  // trở lại, cân nhắc tăng lên 1000-2000ms như đã kiểm chứng ở lần test trước.
+  // Khoảng delay giữa mỗi click.
   const CLICK_DELAY_MIN_MS = 10;
   const CLICK_DELAY_MAX_MS = 30;
  
@@ -317,12 +316,13 @@
     });
   }
  
-  // Game chỉ lắng nghe onClick (đã kiểm tra props React), nên double-click = 2 lần click liên tiếp,
+  // Game chỉ lắng nghe onClick (đã kiểm tra props React), nên click nhiều lần = N lần click liên tiếp,
   // không bắn thêm sự kiện dblclick.
-  async function doubleClick(el) {
-    el.click();
-    await sleep(randomDelay());
-    el.click();
+  async function multiClick(el, times, delayed) {
+    for (let i = 0; i < times; i++) {
+      if (i > 0 && delayed) await sleep(randomDelay());
+      el.click();
+    }
   }
  
   async function runManualClick(group) {
@@ -351,14 +351,11 @@
           console.log(`${group.key}: hết hạt, gặp ô đất trống, dừng.`);
           break;
         }
-        if (group.doubleClick) {
-          await doubleClick(el);
-          logClick(`Đã double-click (${group.key}):`, el);
-        } else {
-          el.click();
-          logClick(`Đã click (${group.key}):`, el);
-        }
-        await sleep(randomDelay());
+        const times = group.clicks ?? 1;
+        const delayed = group.delay !== false;
+        await multiClick(el, times, delayed);
+        logClick(`Đã click x${times} (${group.key}):`, el);
+        if (delayed) await sleep(randomDelay());
       }
     } finally {
       // Luôn nhả khóa kể cả khi có lỗi giữa chừng, tránh kẹt vĩnh viễn mọi nút.
